@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Projet Raid</string>
+    <string name="btn_open_devices">Afficher les appareils</string>
+
+</resources>

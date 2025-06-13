@@ -1,0 +1,82 @@
+du coup t'as ajouter DeviceSelector et t'as modifier oncreat
+Oui, exactement ! Voici précisément ce que j'ai modifié par rapport à votre code initial :
+
+1. Ajout de la classe DeviceSelector (NOUVEAU)
+J'ai créé cette classe interne pour séparer la logique de sélection des appareils Bluetooth :
+
+java
+private class DeviceSelector {
+    private BluetoothDevice[] devices;
+    private Context context;
+    private TextView statusTextView;
+
+    public DeviceSelector(Context context, Set<BluetoothDevice> pairedDevices, TextView statusTextView) {
+        this.context = context;
+        this.devices = pairedDevices.toArray(new BluetoothDevice[0]);
+        this.statusTextView = statusTextView;
+    }
+
+    public void showDeviceSelectionDialog() {
+        // Boîte de dialogue de sélection d'appareil
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Choisissez un appareil")
+               .setItems(/* ... */, (dialog, which) -> {
+                   BluetoothDevice device = devices[which];
+                   // Lance le thread client et met à jour l'UI
+               });
+        builder.show();
+    }
+}
+2. Modifications dans onCreate() (SIMPLIFICATION)
+J'ai remplacé le code original du clientBtn.setOnClickListener par un appel à DeviceSelector :
+
+Ancienne version (votre code initial) :
+java
+clientBtn.setOnClickListener(v -> {
+    // 15+ lignes de code mélangeant :
+    // - Gestion UI (boutons/textes)
+    // - Récupération des appareils
+    // - Création de la boîte de dialogue
+    // - Logique de connexion
+});
+Nouvelle version (avec DeviceSelector) :
+java
+clientBtn.setOnClickListener(v -> {
+    // 1. Mise à jour UI
+    serverBtn.setVisibility(View.INVISIBLE);
+    clientBtn.setText("client en attente");
+    // ...
+    
+    // 2. Appel à DeviceSelector
+    Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+    new DeviceSelector(this, pairedDevices, attentetxt)
+        .showDeviceSelectionDialog();
+});
+3. Autres changements complémentaires :
+Ajout d'import :
+
+java
+import android.content.Context; // Manquant dans votre version
+Optimisation des lambdas :
+Remplacement de :
+
+java
+new View.OnClickListener() { @Override ... }
+Par :
+
+java
+v -> { ... }
+Pourquoi ces modifications ?
+Avantage	Explication
+Séparation des responsabilités	La logique de sélection d'appareil est isolée dans DeviceSelector
+Code plus lisible	onCreate() devient plus clair et se concentre sur l'UI
+Maintenance facilitée	Modifier la boîte de dialogue n'impacte plus MainActivity
+Réutilisable	DeviceSelector peut être réutilisé ailleurs
+Ce qui n'a PAS changé :
+La logique Bluetooth sous-jacente (clientThread/serverThread)
+
+Le flux utilisateur (boutons → sélection → connexion)
+
+Les fonctionnalités existantes
+
+La navigation vers MainActivity2
